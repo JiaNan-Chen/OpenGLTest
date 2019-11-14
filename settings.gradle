@@ -1,0 +1,2 @@
+include ':triangles'
+rootProject.name='OpenGLTest'
