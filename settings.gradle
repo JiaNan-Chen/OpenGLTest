@@ -1,2 +1,2 @@
-include ':triangles'
+include ':triangles', ':openglutil'
 rootProject.name='OpenGLTest'

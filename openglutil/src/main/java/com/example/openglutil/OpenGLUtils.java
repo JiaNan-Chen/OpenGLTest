@@ -1,4 +1,4 @@
-package com.example.opengltest.util;
+package com.example.openglutil;
 
 import android.content.Context;
 import android.opengl.GLES20;
