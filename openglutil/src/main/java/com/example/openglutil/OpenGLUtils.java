@@ -94,16 +94,16 @@ public class OpenGLUtils {
 
     public static int createTexture(Context context, int id) {
 
-        Bitmap mBitmap=Bitmap.createBitmap(30,30, Bitmap.Config.RGB_565);
-        Canvas canvas=new Canvas(mBitmap);
-
-        canvas.drawColor(0xff00ff00);
-        Paint paint=new Paint();
-        paint.setStrokeWidth(1);
-        paint.setColor(0xffff00ff);
-        canvas.drawPoint(15,15,paint);
+//        Bitmap mBitmap=Bitmap.createBitmap(30,30, Bitmap.Config.RGB_565);
+//        Canvas canvas=new Canvas(mBitmap);
+//
+//        canvas.drawColor(0xff00ff00);
+//        Paint paint=new Paint();
+//        paint.setStrokeWidth(1);
+//        paint.setColor(0xffff00ff);
+//        canvas.drawPoint(15,15,paint);
 //        //加载Bitmap
-//        mBitmap = BitmapFactory.decodeResource(context.getResources(), id, options);
+    Bitmap    mBitmap = BitmapFactory.decodeResource(context.getResources(),id);
         //保存到textureObjectId
         int[] textureObjectId = new int[1];
         if (mBitmap != null && !mBitmap.isRecycled()) {

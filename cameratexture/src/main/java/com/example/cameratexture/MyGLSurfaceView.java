@@ -1,4 +1,4 @@
-package com.example.textures;
+package com.example.cameratexture;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -34,7 +34,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
             0,0,
             0,1,
             1,0,
-            1,1
+            1,1,
     };
 
     public MyGLSurfaceView(Context context) {
