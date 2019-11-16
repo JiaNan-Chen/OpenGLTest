@@ -1,7 +1,12 @@
 package com.example.openglutil;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -85,5 +90,43 @@ public class OpenGLUtils {
             return -1;
         }
         return compileShaderCode(type, readAssetContent(context, fileName));
+    }
+
+    public static int createTexture(Context context, int id) {
+
+        Bitmap mBitmap=Bitmap.createBitmap(30,30, Bitmap.Config.RGB_565);
+        Canvas canvas=new Canvas(mBitmap);
+
+        canvas.drawColor(0xff00ff00);
+        Paint paint=new Paint();
+        paint.setStrokeWidth(1);
+        paint.setColor(0xffff00ff);
+        canvas.drawPoint(15,15,paint);
+//        //加载Bitmap
+//        mBitmap = BitmapFactory.decodeResource(context.getResources(), id, options);
+        //保存到textureObjectId
+        int[] textureObjectId = new int[1];
+        if (mBitmap != null && !mBitmap.isRecycled()) {
+            //生成一个纹理，保存到这个数组中
+            GLES20.glGenTextures(1, textureObjectId, 0);
+            //绑定GL_TEXTURE_2D
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureObjectId[0]);
+            //设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+            //设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+            //设置环绕方向S，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+            //设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+            //根据以上指定的参数，生成一个2D纹理
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mBitmap, 0);
+            //回收释放
+            mBitmap.recycle();
+            //因为我们已经复制成功了。所以就进行解除绑定。防止修改
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            return textureObjectId[0];
+        }
+        return 0;
     }
 }
