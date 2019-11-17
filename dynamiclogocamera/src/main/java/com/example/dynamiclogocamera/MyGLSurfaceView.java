@@ -1,6 +1,7 @@
 package com.example.dynamiclogocamera;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
@@ -22,13 +23,18 @@ public class MyGLSurfaceView extends GLSurfaceView {
     }
 
     private int mProgramObjectId;
+    private int mLogoObjectId;
 
     private int mTextureId;
+    private int mLogoTextureId;
 
     private SurfaceTexture mSurfaceTexture;
 
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
+
+    private FloatBuffer mLogoVertexBuffer;
+    private FloatBuffer mLogoTextureBuffer;
 
     private TextureListener mTextureListener;
 
@@ -48,10 +54,24 @@ public class MyGLSurfaceView extends GLSurfaceView {
     };
 
     private float[] mTexturePosition = {
-            0,1,//0,1
+            0, 1,//0,1
             1, 1,//1,1
             0, 0,//0,0
             1, 0,//1,0
+    };
+
+    private float[] mLogoVertex = {
+            -1f, 1f, 0,
+            -1f, 0.9f, 0,
+            -0.3f, 1f, 0,
+            -0.3f, 0.9f, 0,
+    };
+
+    private float[] mLogoTexturePosition = {
+            0, 0,
+            0, 1,
+            1, 0,
+            1, 1,
     };
 
     public MyGLSurfaceView(Context context) {
@@ -60,14 +80,21 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
     public MyGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        getHolder().setFormat(PixelFormat.RGBA_8888);
         setEGLContextClientVersion(2);
         mVertexBuffer = ByteBuffer.allocateDirect(4 * 3 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mVertex);
         mVertexBuffer.position(0);
+        mLogoVertexBuffer = ByteBuffer.allocateDirect(4 * 3 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mLogoVertex);
+        mLogoVertexBuffer.position(0);
         mTextureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mTexturePosition);
         mTextureBuffer.position(0);
+        mLogoTextureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mLogoTexturePosition);
+        mLogoTextureBuffer.position(0);
         setRenderer(new Renderer() {
             @Override
             public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+                GLES20.glEnable(GLES20.GL_BLEND); //打开混合功能
+                GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA); //指定混合模式
                 //在创建的时候，去创建这些着色器
                 mProgramObjectId = GLES20.glCreateProgram();
                 int vertexShaderObjectId = OpenGLUtils.compileShaderFile(getContext(), GLES20.GL_VERTEX_SHADER, "1/triangles_vertex.glsl");
@@ -83,12 +110,21 @@ public class MyGLSurfaceView extends GLSurfaceView {
                     @Override
                     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
                         requestRender();
-//                        Log.i("testframe",Thread.currentThread().getName());
                     }
                 });
                 if (mTextureListener != null) {
                     mTextureListener.textureCreateDown(mSurfaceTexture);
                 }
+
+                //创建logo的programe和纹理
+                mLogoObjectId = GLES20.glCreateProgram();
+                int logoVertexShaderObjectId = OpenGLUtils.compileShaderFile(getContext(), GLES20.GL_VERTEX_SHADER, "1/logo_vertex.glsl");
+                GLES20.glAttachShader(mLogoObjectId, logoVertexShaderObjectId);
+                int logoFragmentShaderObjectId = OpenGLUtils.compileShaderFile(getContext(), GLES20.GL_FRAGMENT_SHADER, "1/logo_color.glsl");
+                GLES20.glAttachShader(mLogoObjectId, logoFragmentShaderObjectId);
+                //4.最后，启动GL link program
+                GLES20.glLinkProgram(mLogoObjectId);
+                mLogoTextureId = OpenGLUtils.createTexture(getContext(), R.drawable.logo);
             }
 
             @Override
@@ -136,8 +172,41 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 //绘制三角形.
                 //draw arrays的几种方式 GL_TRIANGLES三角形 GL_TRIANGLE_STRIP三角形带的方式(开始的3个点描述一个三角形，后面每多一个点，多一个三角形) GL_TRIANGLE_FAN扇形(可以描述圆形)
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+                //----------------------------------------------------------------
+
+                GLES20.glUseProgram(mLogoObjectId);
+                //1.根据我们定义的取出定义的位置
+                int aTexturePosition = GLES20.glGetAttribLocation(mLogoObjectId, "aPosition");
+                //2.开始启用我们的position
+                GLES20.glEnableVertexAttribArray(aTexturePosition);
+                //3.将坐标数据放入
+                GLES20.glVertexAttribPointer(
+                        aTexturePosition,  //上面得到的id
+                        3, //告诉他用几个偏移量来描述一个顶点
+                        GLES20.GL_FLOAT, false,
+                        3 * 4, //一个顶点需要多少个字节的偏移量
+                        mLogoVertexBuffer);
+
+                int aTextureColor = GLES20.glGetAttribLocation(mLogoObjectId, "aTexturePosition");
+                GLES20.glEnableVertexAttribArray(aTextureColor);
+                GLES20.glVertexAttribPointer(aTextureColor, 2, GLES20.GL_FLOAT, false, 2 * 4, mLogoTextureBuffer);
+
+                // Set the active texture unit to texture unit 0.
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+                // Bind the texture to this unit.
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLogoTextureId);
+
+                // Tell the texture uniform sampler to use this texture in the shader by
+                // telling it to read from texture unit 0.
+                GLES20.glUniform1i(GLES20.glGetUniformLocation(mLogoObjectId, "uTextureUnit"), 0);
+                //绘制三角形.
+                //draw arrays的几种方式 GL_TRIANGLES三角形 GL_TRIANGLE_STRIP三角形带的方式(开始的3个点描述一个三角形，后面每多一个点，多一个三角形) GL_TRIANGLE_FAN扇形(可以描述圆形)
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
                 //禁止顶点数组的句柄
-                GLES20.glDisableVertexAttribArray(aPosition);
+//                GLES20.glDisableVertexAttribArray(aPosition);
             }
         });
         setRenderMode(RENDERMODE_WHEN_DIRTY);

@@ -62,7 +62,7 @@ public class OpenGLUtils {
             reader = new BufferedReader(new InputStreamReader(open));
             String tempStr;
             while ((tempStr = reader.readLine()) != null) {
-                sb.append(tempStr+"\n");
+                sb.append(tempStr + "\n");
             }
             reader.close();
             Log.i(TAG, sb.toString());
@@ -106,7 +106,9 @@ public class OpenGLUtils {
 //        paint.setColor(0xffff00ff);
 //        canvas.drawPoint(15,15,paint);
 //        //加载Bitmap
-    Bitmap    mBitmap = BitmapFactory.decodeResource(context.getResources(),id);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        Bitmap mBitmap = BitmapFactory.decodeResource(context.getResources(), id,options);
         //保存到textureObjectId
         int[] textureObjectId = new int[1];
         if (mBitmap != null && !mBitmap.isRecycled()) {
@@ -133,7 +135,7 @@ public class OpenGLUtils {
         return 0;
     }
 
-    public static int createExternalTexture(){
+    public static int createExternalTexture() {
         int[] textureObjectIds = new int[1];
         //生成纹理iD
         GLES20.glGenTextures(1, textureObjectIds, 0);
