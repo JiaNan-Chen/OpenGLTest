@@ -1,2 +1,2 @@
-include ':triangles', ':openglutil', ':textures', ':square', ':cameratexture'
+include ':triangles', ':openglutil', ':textures', ':square', ':cameratexture', ':camerautil'
 rootProject.name='OpenGLTest'

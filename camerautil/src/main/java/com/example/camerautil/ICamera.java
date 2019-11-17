@@ -1,4 +1,4 @@
-package com.example.cameratexture;
+package com.example.camerautil;
 
 import android.app.Activity;
 import android.hardware.Camera;

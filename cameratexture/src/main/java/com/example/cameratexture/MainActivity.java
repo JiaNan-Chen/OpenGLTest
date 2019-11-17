@@ -12,9 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.example.camerautil.CameraImpl;
+
 import java.io.IOException;
 
-import static com.example.cameratexture.CameraImpl.REQUEST_CAMERA_CODE;
 
 public class MainActivity extends AppCompatActivity {
     private MyGLSurfaceView mGLSurfaceView;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CAMERA_CODE && resultCode == RESULT_OK) {
+        if (requestCode == CameraImpl.REQUEST_CAMERA_CODE && resultCode == RESULT_OK) {
             mGLSurfaceView.setTextureListener(new MyGLSurfaceView.TextureListener() {
                 @Override
                 public void textureCreateDown(SurfaceTexture surfaceTexture) {
