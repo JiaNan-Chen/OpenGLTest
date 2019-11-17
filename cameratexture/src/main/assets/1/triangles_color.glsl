@@ -1,9 +1,10 @@
-precision mediump float;
+#extension GL_OES_EGL_image_external : require
+ precision mediump float;
 
-uniform sampler2D uTextureUnit;
+uniform samplerExternalOES uTextureUnit;
 
 varying vec2 vTexturePosition;
 
 void main(){
-    gl_FragColor =  texture2D(uTextureUnit, vTexturePosition);
+    gl_FragColor = texture2D( uTextureUnit, vTexturePosition );
 }

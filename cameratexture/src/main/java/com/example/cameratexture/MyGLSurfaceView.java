@@ -1,12 +1,18 @@
 package com.example.cameratexture;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
+import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.SurfaceHolder;
 
 
 import com.example.openglutil.OpenGLUtils;
+
+import org.w3c.dom.Text;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,25 +22,41 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class MyGLSurfaceView extends GLSurfaceView {
+    public interface TextureListener {
+        void textureCreateDown(SurfaceTexture surfaceTexture);
+    }
+
     private int mProgramObjectId;
 
     private int mTextureId;
 
+    private SurfaceTexture mSurfaceTexture;
+
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
 
+    private TextureListener mTextureListener;
+
+    public void setTextureListener(TextureListener listener) {
+        if (mSurfaceTexture == null) {
+            mTextureListener = listener;
+            return;
+        }
+        listener.textureCreateDown(mSurfaceTexture);
+    }
+
     private float[] mVertex = {
-            -0.5f,0.5f,0,
-            -0.5f,-0.5f,0,
-            0.5f,0.5f,0,
-            0.5f,-0.5f,0,
+            -1f, 1f, 0,
+            -1f, -1f, 0,
+            1f, 1f, 0,
+            1f, -1f, 0,
     };
 
     private float[] mTexturePosition = {
-            0,0,
-            0,1,
-            1,0,
-            1,1,
+            0,1,//0,1
+            1, 1,//1,1
+            0, 0,//0,0
+            1, 0,//1,0
     };
 
     public MyGLSurfaceView(Context context) {
@@ -44,7 +66,6 @@ public class MyGLSurfaceView extends GLSurfaceView {
     public MyGLSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setEGLContextClientVersion(2);
-
         mVertexBuffer = ByteBuffer.allocateDirect(4 * 3 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mVertex);
         mVertexBuffer.position(0);
         mTextureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mTexturePosition);
@@ -61,9 +82,18 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 //4.最后，启动GL link program
                 GLES20.glLinkProgram(mProgramObjectId);
 
-              mTextureId=  OpenGLUtils.createTexture(getContext(),R.drawable.pic);
-
-
+                mTextureId = OpenGLUtils.createExternalTexture();
+                mSurfaceTexture = new SurfaceTexture(mTextureId);
+                mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+                    @Override
+                    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+                        requestRender();
+//                        Log.i("testframe",Thread.currentThread().getName());
+                    }
+                });
+                if (mTextureListener != null) {
+                    mTextureListener.textureCreateDown(mSurfaceTexture);
+                }
             }
 
             @Override
@@ -73,10 +103,16 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
             @Override
             public void onDrawFrame(GL10 gl) {
-                //0.先使用这个program?这一步应该可以放到onCreate中进行
-                GLES20.glClearColor(1, 1, 1, 1);
+                GLES20.glClearColor(1, 0, 0, 1);
                 GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+
+                //0.先使用这个program?这一步应该可以放到onCreate中进行
                 GLES20.glUseProgram(mProgramObjectId);
+                if (mSurfaceTexture != null) {
+                    mSurfaceTexture.updateTexImage();
+                }
+//                Log.i("testdraw",Thread.currentThread().getName());
+
                 //1.根据我们定义的取出定义的位置
                 int aPosition = GLES20.glGetAttribLocation(mProgramObjectId, "aPosition");
                 //2.开始启用我们的position
@@ -94,14 +130,14 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 GLES20.glVertexAttribPointer(aColor, 2, GLES20.GL_FLOAT, false, 2 * 4, mTextureBuffer);
 
                 // Set the active texture unit to texture unit 0.
-                GLES20.glActiveTexture( GLES20.GL_TEXTURE0);
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
-// Bind the texture to this unit.
-                GLES20.glBindTexture( GLES20.GL_TEXTURE_2D, mTextureId);
+                // Bind the texture to this unit.
+                GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTextureId);
 
-// Tell the texture uniform sampler to use this texture in the shader by
-// telling it to read from texture unit 0.
-                GLES20.glUniform1i(GLES20.glGetUniformLocation(mProgramObjectId,"uTextureUnit"), 0);
+                // Tell the texture uniform sampler to use this texture in the shader by
+                // telling it to read from texture unit 0.
+                GLES20.glUniform1i(GLES20.glGetUniformLocation(mProgramObjectId, "uTextureUnit"), 0);
                 //绘制三角形.
                 //draw arrays的几种方式 GL_TRIANGLES三角形 GL_TRIANGLE_STRIP三角形带的方式(开始的3个点描述一个三角形，后面每多一个点，多一个三角形) GL_TRIANGLE_FAN扇形(可以描述圆形)
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
@@ -109,5 +145,6 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 GLES20.glDisableVertexAttribArray(aPosition);
             }
         });
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
 }

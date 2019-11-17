@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
@@ -13,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import javax.microedition.khronos.opengles.GL10;
 
 public class OpenGLUtils {
     public static final String TAG = OpenGLUtils.class.getSimpleName();
@@ -59,7 +62,7 @@ public class OpenGLUtils {
             reader = new BufferedReader(new InputStreamReader(open));
             String tempStr;
             while ((tempStr = reader.readLine()) != null) {
-                sb.append(tempStr);
+                sb.append(tempStr+"\n");
             }
             reader.close();
             Log.i(TAG, sb.toString());
@@ -128,5 +131,25 @@ public class OpenGLUtils {
             return textureObjectId[0];
         }
         return 0;
+    }
+
+    public static int createExternalTexture(){
+        int[] textureObjectIds = new int[1];
+        //生成纹理iD
+        GLES20.glGenTextures(1, textureObjectIds, 0);
+        int textureObjectId = textureObjectIds[0];
+        //将纹理ID绑定到GL_TEXTURE_EXTERNAL_OES
+        //这里需要注意的是GL_TEXTURE_EXTERNAL_OES ，对应android 相机必须要的
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureObjectId);
+        //设置放大缩小。设置边缘测量
+        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
+        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+        return textureObjectId;
     }
 }
