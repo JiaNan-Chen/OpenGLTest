@@ -40,7 +40,16 @@
         android:onClick="line"
         android:text="线条"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/multi_display"
         app:layout_constraintStart_toEndOf="@id/filter_black_white" />
 
+    <Button
+        android:id="@+id/multi_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="multiDisplay"
+        android:text="分屏"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/filter_line" />
 </androidx.constraintlayout.widget.ConstraintLayout>

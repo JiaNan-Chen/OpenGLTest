@@ -44,5 +44,22 @@ void main(){
         vec3 endColor = fanshe.rgb+(fanshe.rgb*color.rgb)/(1.0-color.rgb);
         //最终获取的颜色
         gl_FragColor = vec4(endColor, 0.0);
+    } else if (uMode==3){
+        //分屏
+        vec2 uv = vTexturePosition.xy;
+
+        if (uv.x <= 0.5) {
+            uv.x = uv.x * 2.0;
+        }else {
+            uv.x = (uv.x - 0.5) * 2.0;
+        }
+
+        if (uv.y <= 0.5) {
+            uv.y = uv.y * 2.0;
+        }else {
+            uv.y = (uv.y - 0.5) * 2.0;
+        }
+
+        gl_FragColor = texture2D(uTextureUnit, uv);
     }
 }

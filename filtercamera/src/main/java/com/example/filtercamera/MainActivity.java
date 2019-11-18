@@ -92,4 +92,8 @@ public class MainActivity extends AppCompatActivity {
     public void normal(View view) {
         mGLSurfaceView.setMode(0);
     }
+
+    public void multiDisplay(View view) {
+        mGLSurfaceView.setMode(3);
+    }
 }

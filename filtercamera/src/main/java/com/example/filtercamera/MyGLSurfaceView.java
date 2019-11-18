@@ -40,6 +40,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private TextureListener mTextureListener;
 
     private int mMode = 0;
+    private int mAlpha = 0;
 
     public void setTextureListener(TextureListener listener) {
         if (mSurfaceTexture == null) {
@@ -64,10 +65,10 @@ public class MyGLSurfaceView extends GLSurfaceView {
     };
 
     private float[] mLogoVertex = {
-            -1f, 1f, 0,
-            -1f, 0.9f, 0,
-            -0.3f, 1f, 0,
-            -0.3f, 0.9f, 0,
+            -0.95f, 0.95f, 0,
+            -0.95f, 0.85f, 0,
+            -0.3f, 0.95f, 0,
+            -0.3f, 0.85f, 0,
     };
 
     private float[] mLogoTexturePosition = {
@@ -197,6 +198,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 GLES20.glEnableVertexAttribArray(aTextureColor);
                 GLES20.glVertexAttribPointer(aTextureColor, 2, GLES20.GL_FLOAT, false, 2 * 4, mLogoTextureBuffer);
 
+                GLES20.glUniform1f(GLES20.glGetUniformLocation(mLogoObjectId, "uAlpha"), 1.0f *Math.abs( ((mAlpha % 200) - 100)) / 100);
+
                 // Set the active texture unit to texture unit 0.
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
@@ -209,7 +212,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 //绘制三角形.
                 //draw arrays的几种方式 GL_TRIANGLES三角形 GL_TRIANGLE_STRIP三角形带的方式(开始的3个点描述一个三角形，后面每多一个点，多一个三角形) GL_TRIANGLE_FAN扇形(可以描述圆形)
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-
+                mAlpha ++;
                 //禁止顶点数组的句柄
 //                GLES20.glDisableVertexAttribArray(aPosition);
             }
