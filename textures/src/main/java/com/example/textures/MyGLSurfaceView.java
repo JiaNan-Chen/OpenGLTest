@@ -24,17 +24,17 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private FloatBuffer mTextureBuffer;
 
     private float[] mVertex = {
-            -0.5f,0.5f,0,
-            -0.5f,-0.5f,0,
-            0.5f,0.5f,0,
-            0.5f,-0.5f,0,
+            -0.5f,-0.5f,
+            -0.5f, 0.5f,
+            0.5f,-0.5f,
+            0.5f, 0.5f,
     };
 
     private float[] mTexturePosition = {
-            0,0,
             0,1,
+            0,0,
+            1,1,
             1,0,
-            1,1
     };
 
     public MyGLSurfaceView(Context context) {
@@ -45,7 +45,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         super(context, attrs);
         setEGLContextClientVersion(2);
 
-        mVertexBuffer = ByteBuffer.allocateDirect(4 * 3 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mVertex);
+        mVertexBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mVertex);
         mVertexBuffer.position(0);
         mTextureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mTexturePosition);
         mTextureBuffer.position(0);
@@ -84,9 +84,9 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 //3.将坐标数据放入
                 GLES20.glVertexAttribPointer(
                         aPosition,  //上面得到的id
-                        3, //告诉他用几个偏移量来描述一个顶点
+                        2, //告诉他用几个偏移量来描述一个顶点
                         GLES20.GL_FLOAT, false,
-                        3 * 4, //一个顶点需要多少个字节的偏移量
+                        2 * 4, //一个顶点需要多少个字节的偏移量
                         mVertexBuffer);
 
                 int aColor = GLES20.glGetAttribLocation(mProgramObjectId, "aTexturePosition");
@@ -96,17 +96,15 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 // Set the active texture unit to texture unit 0.
                 GLES20.glActiveTexture( GLES20.GL_TEXTURE0);
 
-// Bind the texture to this unit.
+                // Bind the texture to this unit.
                 GLES20.glBindTexture( GLES20.GL_TEXTURE_2D, mTextureId);
 
-// Tell the texture uniform sampler to use this texture in the shader by
-// telling it to read from texture unit 0.
+                // Tell the texture uniform sampler to use this texture in the shader by
+                // telling it to read from texture unit 0.
                 GLES20.glUniform1i(GLES20.glGetUniformLocation(mProgramObjectId,"uTextureUnit"), 0);
                 //绘制三角形.
                 //draw arrays的几种方式 GL_TRIANGLES三角形 GL_TRIANGLE_STRIP三角形带的方式(开始的3个点描述一个三角形，后面每多一个点，多一个三角形) GL_TRIANGLE_FAN扇形(可以描述圆形)
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-                //禁止顶点数组的句柄
-                GLES20.glDisableVertexAttribArray(aPosition);
             }
         });
     }
