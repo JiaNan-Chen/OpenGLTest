@@ -1,2 +1,2 @@
-include ':triangles', ':openglutil', ':textures', ':square', ':cameratexture', ':camerautil', ':dynamiclogocamera', ':filtercamera', ':vbo'
+include ':triangles', ':openglutil', ':textures', ':square', ':cameratexture', ':camerautil', ':dynamiclogocamera', ':filtercamera', ':vbo', ':ebo'
 rootProject.name='OpenGLTest'
