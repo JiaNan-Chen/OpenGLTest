@@ -3,6 +3,7 @@ package com.example.a11cameratrack;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.util.AttributeSet;
 
 import com.example.openglutil.OpenGLUtils;
@@ -22,6 +23,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
     private FloatBuffer mModelMatrixBuffer;
+    private FloatBuffer mViewMatrixBuffer;
 
     private float[] mVertex = {
             -0.5f, -0.5f, 0,
@@ -43,6 +45,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
             0, 0, 1, 0,
             0, 0, 0, 1,
     };
+
+    private float[] mViewMatrix = new float[16];
 
     public MyGLSurfaceView(Context context) {
         this(context, null);
@@ -81,9 +85,13 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 }
                 mModelMatrixBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mModelMatrix);
                 mModelMatrixBuffer.position(0);
+                Matrix.setLookAtM(mViewMatrix, 0, 0.1f, 0, 0.5f, 0, 0, 0, 0, 1, 0);
+                mViewMatrixBuffer = ByteBuffer.allocateDirect(4 * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer().put(mViewMatrix);
+                mViewMatrixBuffer.position(0);
             }
 
             @Override
+
             public void onDrawFrame(GL10 gl) {
                 //0.先使用这个program?这一步应该可以放到onCreate中进行
                 GLES20.glClearColor(1, 1, 1, 1);
@@ -106,6 +114,12 @@ public class MyGLSurfaceView extends GLSurfaceView {
                 GLES20.glEnableVertexAttribArray(aModelMatrix);
                 //3.将坐标数据放入
                 GLES20.glUniformMatrix4fv(aModelMatrix, 1, false, mModelMatrixBuffer);
+
+                int aViewMatrix = GLES20.glGetUniformLocation(mProgramObjectId, "aViewMatrix");
+                //2.开始启用我们的position
+                GLES20.glEnableVertexAttribArray(aViewMatrix);
+                //3.将坐标数据放入
+                GLES20.glUniformMatrix4fv(aViewMatrix, 1, false, mViewMatrixBuffer);
 
                 int aColor = GLES20.glGetAttribLocation(mProgramObjectId, "aTexturePosition");
                 GLES20.glEnableVertexAttribArray(aColor);
