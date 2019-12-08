@@ -1,2 +1,2 @@
-include ':00base:openglutil', ':00base:camerautil', ':01triangles', ':02square', ':03textures', ':04cameratexture', ':05dynamiclogocamera', ':06filtercamera', ':07vbo', ':08ebo', ':09vao', ':10matrixtexture', ':11cameratrack'
+include ':00base:openglutil', ':00base:camerautil', ':01triangles', ':02square', ':03textures', ':04cameratexture', ':05dynamiclogocamera', ':06filtercamera', ':07vbo', ':08ebo', ':09vao', ':10matrixtexture', ':11cameratrack', ':12perspectivematrix'
 rootProject.name = 'OpenGLTest'
