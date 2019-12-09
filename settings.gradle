@@ -13,5 +13,6 @@ include ':00base:openglutil',
         ':11cameratrack',
         ':12perspectivematrix',
         ':13imagecamaretrack',
-        ':14coordinateimage'
+        ':14coordinateimage',
+        ':15cube3d'
 rootProject.name = 'MyOpenGL_ES'
